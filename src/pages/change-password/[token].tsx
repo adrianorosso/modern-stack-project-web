@@ -26,7 +26,6 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
             token,
             newPassword: values.newPassword,
           });
-          console.log("HEHEHE " + JSON.stringify(response.data));
           if (response.data?.changePassword.errors) {
             const errorMap = toErrorMap(response.data.changePassword.errors);
             if ("token" in errorMap) {
