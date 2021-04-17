@@ -45,7 +45,7 @@ const Index = () => {
               <UpdootSection post={p} />
               <Box>
                 <Heading fontSize="xl">{p.title}</Heading>{" "}
-                <Text>poste by {p.creator.username}</Text>
+                <Text>posted by {p.creator.username}</Text>
                 <Text mt={4}>{p.textSnippet}</Text>
               </Box>
             </Flex>
