@@ -4,7 +4,9 @@ query Posts($limit: Int!, $cursor: String) {
     createdAt
     updatedAt
     title
+    points
     textSnippet
+    voteStatus
     creator {
       id
       username

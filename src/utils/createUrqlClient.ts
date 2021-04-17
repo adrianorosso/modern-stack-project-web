@@ -12,9 +12,11 @@ import {
   MeDocument,
   MeQuery,
   RegisterMutation,
+  VoteMutationVariables,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "../utils/betterUpdateQuery";
 import router from "next/router";
+import { gql } from "@urql/core";
 
 const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
@@ -66,7 +68,39 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
-          CreatePost: (_result, args, cache, info) => {
+          vote: (_result, args, cache, info) => {
+            //Updating the cache after voting
+            const { postId, value } = args as VoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  points
+                  voteStatus
+                }
+              `,
+              { id: postId }
+            );
+
+            if (data) {
+              if (data.voteStatus === value) {
+                // Trying to upvote or downvote again
+                return;
+              }
+              const newPoints =
+                data.points + (!data.voteStatus ? 1 : 2) * value;
+              cache.writeFragment(
+                gql`
+                  fragment _ on Post {
+                    points
+                    voteStatus
+                  }
+                `,
+                { id: postId, points: newPoints, voteStatus: value }
+              );
+            }
+          },
+          createPost: (_result, args, cache, info) => {
             // invalidating all the queries in case we had pressed
             // the "Load more" button
             const allFields = cache.inspectFields("Query");
