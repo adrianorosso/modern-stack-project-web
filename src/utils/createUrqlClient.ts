@@ -1,4 +1,4 @@
-import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
+import { Cache, cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import {
   dedupExchange,
   Exchange,
@@ -53,6 +53,16 @@ const errorExchange: Exchange = ({ forward }) => (ops$) => {
       }
     })
   );
+};
+
+const invalidateAllPosts = (cache: Cache) => {
+  // invalidating all the queries in case we had pressed
+  // the "Load more" button
+  const allFields = cache.inspectFields("Query");
+  const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
+  fieldInfos.forEach((fi) => {
+    cache.invalidate("Query", "posts", fi.arguments || {});
+  });
 };
 
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
@@ -116,15 +126,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
               }
             },
             createPost: (_result, args, cache, info) => {
-              // invalidating all the queries in case we had pressed
-              // the "Load more" button
-              const allFields = cache.inspectFields("Query");
-              const fieldInfos = allFields.filter(
-                (info) => info.fieldName === "posts"
-              );
-              fieldInfos.forEach((fi) => {
-                cache.invalidate("Query", "posts", fi.arguments || {});
-              });
+              invalidateAllPosts(cache);
             },
             logout: (_result, args, cache, info) => {
               betterUpdateQuery<LogoutMutation, MeQuery | undefined>(
@@ -151,8 +153,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   }
                 }
               );
+              invalidateAllPosts(cache);
             },
-
             register: (_result, args, cache, info) => {
               betterUpdateQuery<RegisterMutation, MeQuery | undefined>(
                 cache,
