@@ -1,4 +1,4 @@
-#modern-stack-project-web
+# modern-stack-project-web
 
 Frontend service with user registration/login, CRUD for posts and upvote/downvote posts.
 
